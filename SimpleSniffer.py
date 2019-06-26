@@ -4,7 +4,7 @@ from scapy.all import *
 import os
 import collections
 
-Net = collections.namedtuple("Net", "src", "sport", "dst", "dport")
+Net = collections.namedtuple("Net", ["src", "sport", "dst", "dport"])
 
 class packet_captor:
     def __init__(self, file_path = None, filter="", count=10, keepavlie=True):
@@ -27,15 +27,12 @@ class packet_captor:
             return
 
         if "IP" not in pkt:
-            print("Missing IP layer in pkt")
             return
 
         if "UDP" not in pkt:
-            print("Missing UDP layer in pkt")
             return
 
         if "Raw" not in pkt:
-            print("Missing Raw data in pkt")
             return
 
         try:
@@ -65,12 +62,19 @@ class packet_captor:
             filename = "{0.src}_{0.sport}-{0.dst}_{0.dport}.pcap".format(name)
             wrpcap(filename, pkts)
 
+
+def pkt_captor_thread(captor):
+    sniff(prn=captor.parse_pcap_packet, started_callback=captor.start_caping,
+              stop_filter=captor.stop_caping, store=False, count=300)
+
 captor = packet_captor()
-t = sniff(prn=captor.parse_pcap_packet, started_callback=captor.start_caping,
-          stop_filter=captor.stop_caping, store=False, count=300)
+thread = threading.Thread(target=pkt_captor_thread, args=(captor,))
+thread.start()
 while True:
     stop = input("If want to stop, enter stop:")
     if stop.lower() == "stop":
         captor.caping = False
         break
+
+thread.join()
 captor.dump_pkts()
