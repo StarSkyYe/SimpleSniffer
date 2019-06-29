@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<captors>
+	<captor pkts_count="10" enable_keepalive_pkt="1">
+		<pcap_store_path>./pcap</pcap_store_path>
+		<filter></filter>
+	</captor>
+</captors>
